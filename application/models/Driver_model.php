@@ -10,6 +10,7 @@ class Driver_model extends CI_Model {
     public function getDeliveryItem(){
 		return $this->db->query("SELECT 
 			Id,
+			No_SJ,
             Product_no,
 			Product_name,
             Qty,

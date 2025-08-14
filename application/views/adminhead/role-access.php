@@ -22,6 +22,7 @@
 			</div>
 			<div class="row">
 				<div class="col">
+					<!-- Display role name -->
 					<h5 class="mb-5"><strong>Role :</strong> <span style="font-size: 17px"><?= $role['Name']; ?></span></h5>
 					<div class="row mt-2">
 						<div class="col">
@@ -145,7 +146,7 @@
 		});
 
 		$('#addRoleSubMenuModal').on('shown.bs.modal', function() {
-			$('#meenu_id').select2({
+			$('#menu_id').select2({
 				dropdownParent: $('#addRoleSubMenuModal'),
 				width: '100%'
 			});
@@ -155,7 +156,7 @@
 			});
 		});
 
-		$('#meenu_id').on('change', function() {
+		$('#menu_id').on('change', function() {
 			var menu_id = $(this).val();
 			var role_id = <?= $role['Id']; ?>;
 
@@ -297,8 +298,8 @@ foreach ($accessmenu as $acm) : ?>
 						<input type="text" class="form-control" id="role_id" name="role_id" value="<?= $role['Id']; ?>" readonly>
 					</div>
 					<div class="col-4">
-						<label for="meenu_id" class="form-label">Menu</label>
-						<select class="form-select" id="meenu_id" name="meenu_id" required>
+						<label for="menu_id" class="form-label">Menu</label>
+						<select class="form-select" id="menu_id" name="menu_id" required>
 							<option value="">Select Menu</option>
 							<?php foreach ($menu as $mn): ?>
 								<option value="<?= $mn['Id'] ?>"><?= $mn['Id']; ?> | <?= $mn['Name']; ?></option>

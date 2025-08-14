@@ -17,7 +17,8 @@
 							$role_mapping[$role['Id']] = $role['Name'];
 						}
 
-						echo 'Admin Head';
+						// Show the role name based on user Role_id
+						echo isset($role_mapping[$user['Role_id']]) ? $role_mapping[$user['Role_id']] : 'Unknown Role';
 						?>
 					</h3>
 					<div class="social-links mt-2">

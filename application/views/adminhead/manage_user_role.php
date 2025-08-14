@@ -11,10 +11,10 @@
                     <th>#</th>
                     <th>ID</th>
                     <th>Role</th>
-                    <th>CrtDt</th>
-                    <th>CrtBy</th>
-                    <th>UpdDt</th>
-                    <th>UpdBy</th>
+                    <th>Created at</th>
+                    <th>Create by</th>
+                    <th>Update at</th>
+                    <th>Update by</th>
                     <th>Action</th>
                   </tr>
                 </thead>

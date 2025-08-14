@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', function(){
 	</script>
 <?php endif; ?>
 
-<?php if ($this->session->flashdata('blocked')): ?>
+<?php if ($this->session->flashdata('blocked_user')): ?>
 	<script>
 		Swal.fire({
 			title: "Warning",
-			html: `<?= $this->session->flashdata('blocked'); ?>`,
+			html: `<?= $this->session->flashdata('blocked_user'); ?>`,
 			icon: "warning",
 		});
 	</script>

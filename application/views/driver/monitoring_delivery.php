@@ -25,6 +25,7 @@
 									<thead>
 										<tr>
 											<th class="text-center">#</th>
+											<th class="text-center">No SJ</th>
 											<th class="text-center">Product No</th>
 											<th class="text-center">Product Name</th>
 											<th class="text-center">Qty</th>
@@ -81,6 +82,10 @@
             <input type="text" class="form-control" id="ProductNameEdit" name="ProductNameEdit" readonly>
           </div>
           <div class="col-6">
+            <label for="SJNo" class="form-label">No SJ</label>
+            <input type="text" class="form-control" id="SJNo" name="SJNo" readonly>
+          </div>
+          <div class="col-6">
             <label for="StatusEdit" class="form-label">Status</label>
             <select name="StatusEdit" id="StatusEdit" class="form-select" required>
               <option value="">-- Select Status --</option>
@@ -121,6 +126,7 @@
 			$.each(res, function (index, item) {
 				var row = `<tr>
 					<td class="text-center">${index + 1}</td>
+					<td class="text-center">${item.No_SJ}</td>
 					<td class="text-center">${item.Product_no}</td>
 					<td class="text-center">${item.Product_name}</td>
 					<td class="text-center">${item.Qty}</td>
@@ -132,6 +138,7 @@
 						<button type="button" class="btn btn-success edit-data" data-bs-toggle="modal" data-bs-target="#editModal"
 							data-id="${item.Id}" 
 							data-name="${item.Product_name}" 
+							data-no="${item.No_SJ}"
 							data-status="${item.Status}">
 							<i class="bx bxs-edit" style="color: white;"></i>
 						</button>
@@ -143,10 +150,12 @@
 			$('.edit-data').on('click', function () {
 			const id = $(this).data('id');
 			const name = $(this).data('name');
+			const no = $(this).data('no'); 
 			const status = $(this).data('status');
 			
 			$('#editModal').modal('show');
 			$('#material_id').val(id);
+			$('#SJNo').val($(this).data('no'));
 			$('#ProductNameEdit').val(name);
 			$('#StatusEdit').val(status);
 		});

@@ -494,7 +494,7 @@ class Admin extends CI_Controller
 			$this->session->set_flashdata('error_forecasting_stock', "Terjadi kesalahan saat menyimpan prediksi.");
 		}
 
-		redirect('admin/demand_forecasting_stock');	
+		redirect('management/report_demand_stock');	
 	}
 	
 	// public function EditReceivingMaterial()

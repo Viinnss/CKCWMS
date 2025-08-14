@@ -33,30 +33,68 @@
 				$(this).find("i").removeClass("bi-sun").addClass("bi-moon-stars-fill");
 			}
 		});
+
+		// Scroll ke menu yang aktif di sidebar
+		var activeLink = $('#sidebar-nav .navitem-active');
+		if (activeLink.length) {
+			// Mencegah scroll otomatis saat halaman dimuat
+			history.scrollRestoration = 'manual';
+			
+			var sidebarNav = $('#sidebar-nav');
+			// Gunakan setTimeout untuk memastikan sidebar sudah selesai dimuat
+			setTimeout(function() {
+				sidebarNav.animate({
+					scrollTop: activeLink.offset().top - sidebarNav.offset().top + sidebarNav.scrollTop() - 100
+				}, 300);
+				
+				// Mencegah halaman scroll ke atas
+				window.scrollTo({
+					top: window.scrollY,
+					behavior: 'auto'
+				});
+			}, 100);
+		}
 	});
 
-	window.addEventListener('load', function () {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-	
-	// Restore scroll position from localStorage
-    const savedScroll = localStorage.getItem('sidebarScroll');
-    if (savedScroll !== null) {
-        sidebar.scrollTop = parseInt(savedScroll, 10);
-    }
+	// Toggle Password Visibility
+	function togglePassword(inputId) {
+		const passwordInput = document.getElementById(inputId);
+		const eyeIcon = document.getElementById(inputId + '-icon');
+		
+		if (passwordInput.type === 'password') {
+			passwordInput.type = 'text';
+			eyeIcon.classList.remove('bi-eye');
+			eyeIcon.classList.add('bi-eye-slash');
+		} else {
+			passwordInput.type = 'password';
+			eyeIcon.classList.remove('bi-eye-slash');
+			eyeIcon.classList.add('bi-eye');
+		}
+	}
 
-    // Reset scroll position after a short delay to ensure the sidebar is fully rendered
-    setTimeout(() => {
-        if (savedScroll !== null) {
-            sidebar.scrollTop = parseInt(savedScroll, 10);
-        }
-    }, 300);
-
-    // Save scroll position on scroll
-    sidebar.addEventListener('scroll', function () {
-        localStorage.setItem('sidebarScroll', sidebar.scrollTop);
-    });
-});
+	// Alternatif menggunakan vanilla JavaScript untuk scroll ke menu aktif
+	document.addEventListener('DOMContentLoaded', function() {
+		var activeLink = document.querySelector('#sidebar-nav .navitem-active');
+		if (!activeLink) return;
+		
+		// Mencegah scroll otomatis saat halaman dimuat
+		history.scrollRestoration = 'manual';
+		
+		// Scroll ke menu aktif dengan lebih smooth dan tetap di posisi yang sama
+		setTimeout(function() {
+			activeLink.scrollIntoView({
+				behavior: 'smooth',
+				block: 'center',
+				inline: 'nearest'
+			});
+			
+			// Mencegah halaman scroll ke atas
+			window.scrollTo({
+				top: window.scrollY,
+				behavior: 'auto'
+			});
+		}, 200);
+	});
 </script>
 </body>
 

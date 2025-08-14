@@ -121,7 +121,7 @@ class AdminHead extends CI_Controller {
 					'Crtdt' => date('Y-m-d H:i:s'),
 					'Crtby' => $this->input->post('user')
 				];
-				$this->db->insert('manage_role_log', $log_data);
+				$this->db->insert('log', $log_data);
 			}
 		}
 
@@ -226,20 +226,20 @@ class AdminHead extends CI_Controller {
 		$this->AHModel->updateData('users', $id, $Data);
 		$check_insert = $this->db->affected_rows();
 
-		// if ($check_insert > 0) {
-		// 	// LOG
-		// 	$query_log = $this->db->last_query();
-		// 	$log_data = [
-		// 		'affected_table' => 'users',
-		// 		'queries' => $query_log,
-		// 		'Created_at' => date('Y-m-d H:i:s'),
-		// 		'Created_by' => $usersession['Id']
-		// 	];
-		// 	$this->AHModel->insertData('log', $id, $log_data);
-		// 	$this->session->set_flashdata('SUCCESS_EditUser', 'User has been successfully updated');
-		// } else {
-		// 	$this->session->set_flashdata('FAILED_EditUser', 'Failed to update a user');
-		// }
+		if ($check_insert > 0) {
+			// LOG
+			$query_log = $this->db->last_query();
+			$log_data = [
+				'affected_table' => 'users',
+				'queries' => $query_log,
+				'Created_at' => date('Y-m-d H:i:s'),
+				'Created_by' => $usersession['Id']
+			];
+			$this->AHModel->insertData('log', $log_data);
+			$this->session->set_flashdata('SUCCESS_EditUser', 'User has been successfully updated');
+		} else {
+			$this->session->set_flashdata('FAILED_EditUser', 'Failed to update a user');
+		}
 
 		redirect('adminhead/manage_user');
 	}
@@ -339,6 +339,10 @@ class AdminHead extends CI_Controller {
 			'Updated_at' => date('Y-m-d h:i:s'),
 			'Updated_by' => $usersession['Id']
 		);
+
+		if (!empty($this->input->post('password'))) {
+        $Data['Password'] = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
+    	}
 
 		$this->AHModel->updateData('user_role', $id, $Data);
 		$check_insert = $this->db->affected_rows();

@@ -34,17 +34,17 @@ class Auth extends CI_Controller {
             // validasi berhasil, cek throttling dan captcha
             // Cek login attempts
            $email = $this->input->post('email');
-            $user = $this->db->get_where('users', ['Email' => $email])->row_array();
+           $user = $this->db->get_where('users', ['Email' => $email])->row_array();
 
-            if ($user && $user['blocked_until'] > time()) {
-                $wait = ceil(($user['blocked_until'] - time()) / 60);
-                $this->session->set_flashdata(
-                    'blocked',
-                    "<div class='alert alert-danger'>Your account is temporarily blocked for {$wait} minute(s) due to multiple failed login attempts.</div>"
-                );
-                redirect('auth');
-                return;
-            }
+            if ($user && strtotime($user['blocked_until']) > time()) {
+			$wait = ceil((strtotime($user['blocked_until']) - time()) / 60);
+			$this->session->set_flashdata(
+				'blocked',
+				"<div class='alert alert-danger'>Your account is temporarily blocked for {$wait} minute(s) due to multiple failed login attempts.</div>"
+			);
+			redirect('auth');
+			return;
+		}
 
             // Verify Google reCAPTCHA
             $captcha_response = $this->input->post('g-recaptcha-response');
@@ -72,6 +72,20 @@ class Auth extends CI_Controller {
 
 		// jika usernya ada
 		if ($user) {
+
+			if ($user['blocked_until'] > time()) {
+				$remaining = $user['blocked_until'] - time();
+				$minutes = ceil($remaining / 60);
+				$this->incrementLoginAttempts($email);
+				$this->session->set_flashdata(
+					'blocked_user',
+					'<div class="alert alert-danger alert-dismissible fade show" role="alert" style="width: 100%">
+						<i class="bi bi-x-circle me-1"></i> Your account is blocked. Try again in ' . $minutes . ' minute(s).
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>'
+				);
+				redirect('auth');
+			}
 			// jika usernya aktif
 			if ($user['Active'] == 1) {
 				// cek password
@@ -133,18 +147,36 @@ class Auth extends CI_Controller {
 	{
 		$user = $this->db->get_where('users', ['Email' => $email])->row_array();
 
-        if ($user) {
-            $attempts = $user['login_attempts'] + 1;
-            $data = ['login_attempts' => $attempts];
+    if ($user) {
 
-            if ($attempts >= 5) {
-                $data['blocked_until'] = time() + (5 * 60); // blokir 15 menit
-            }
+        // Kalau masih dalam masa blokir → langsung keluar
+        if ($user['blocked_until'] > time()) {
+            return;
+        }
 
+        // Kalau blokir sudah lewat → reset percobaan
+        if ($user['blocked_until'] > 0 && time() > $user['blocked_until']) {
             $this->db->where('Email', $email);
-            $this->db->update('users', $data);
-		}
-	}
+            $this->db->update('users', [
+                'login_attempts' => 1,
+                'blocked_until' => 0
+            ]);
+            return;
+        }
+
+        $attempts = $user['login_attempts'] + 1;
+        $data = ['login_attempts' => $attempts];
+
+        if ($attempts >= 5) {
+            $data['blocked_until'] = time() + (5 * 60);
+        } else {
+            $data['blocked_until'] = 0;
+        }
+
+        $this->db->where('Email', $email);
+        $this->db->update('users', $data);
+    }
+}
 
 	// verify reCAPTCHA response
 	// This function sends a request to Google's reCAPTCHA API to verify the user's response

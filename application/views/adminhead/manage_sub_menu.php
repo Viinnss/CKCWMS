@@ -21,7 +21,7 @@
 							<tr>
 								<th class="text-center">#</th>
 								<th class="text-center">Menu</th>
-								<th class="text-center">Title</th>
+								<th class="text-center">Submenu</th>
 								<th class="text-center">Url</th>
 								<th class="text-center">Icon</th>
 								<th class="text-center">Active</th>
@@ -88,7 +88,7 @@
 						</select>
 					</div>
 					<div class="col-4">
-						<label for="name" class="form-label">Name</label>
+						<label for="name" class="form-label">Submenu</label>
 						<input type="text" class="form-control" id="name" name="name" required>
 					</div>
 					<div class="col-4">
