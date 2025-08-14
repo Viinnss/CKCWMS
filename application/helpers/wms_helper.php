@@ -28,23 +28,6 @@ function is_logged_in()
 				'Menu_id' => $menu_id
 			]);
 	
-			// echo "Role ID: ", $role_id;
-			// echo '<br>';
-			// echo '<br>';
-			// echo "Menu: ", $menu;
-			// echo '<br>';
-			// echo '<br>';
-			// echo "Menu ID: ", $menu_id;
-			// // echo '<br>';
-			// // echo '<br>';
-			// // var_dump($queryMenu);
-			// echo '<br>';
-			// echo '<br>';
-			// var_dump($menu_id);
-			// echo '<br>';
-			// echo '<br>';
-			// var_dump($userAccess);
-			// die;
 			// Check if the user has access to the menu
 			if ($userAccess->num_rows() < 1) {
 				redirect('auth/blocked');
@@ -53,19 +36,6 @@ function is_logged_in()
 
 	}
 }
-
-// function check_access($role_id, $menu_id)
-// {
-// 	$ci = get_instance();
-
-// 	$ci->db->where('role_id', $role_id);
-// 	$ci->db->where('menu_id', $menu_id);
-// 	$result = $ci->db->get('user_access_menu');
-
-// 	if ($result->num_rows() > 0) {
-// 		return "checked='checked'";
-// 	}
-// }
 
 function check_access_submenu($role_id, $menu_id, $submenu_id)
 {

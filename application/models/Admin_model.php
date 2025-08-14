@@ -52,7 +52,8 @@ class Admin_model extends CI_Model {
                     DATE_FORMAT(s.Created_at, '%d') AS day,
                     SUM(s.Qty) AS total_usage
                 FROM storage s
-                JOIN raw_material m ON s.Material_no = m.Material_no
+                -- Join with raw_material to get Material_name and Unit --
+                JOIN raw_material m ON s.Material_no = m.Material_no 
                 WHERE s.Transaction_type = 'Out'
                   AND s.Material_no LIKE 'RW%'
                   AND DATE_FORMAT(s.Created_at, '%Y-%m') IN (?, ?, ?)

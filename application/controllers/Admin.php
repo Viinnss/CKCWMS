@@ -34,6 +34,19 @@ class Admin extends CI_Controller
         $this->load->view('templates/footer');
     }
 
+	public function add_delivery_item(){
+		$data['title'] = 'New Delivery Item';
+        $data['user'] = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
+
+		$data['materials'] = $this->AModel->getListWIP();
+		$data['users'] = $this->AModel->getUsersDriver();
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/navbar', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('admin/add_delivery_item', $data);
+        $this->load->view('templates/footer');
+    }
 	public function addReceivingRawMaterial(){
 		// Get user session
 		$usersession = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
@@ -98,21 +111,6 @@ class Admin extends CI_Controller
 
 		redirect('admin/receiving_raw');
 	}
-
-	public function add_delivery_item(){
-
-		$data['title'] = 'New Delivery Item';
-        $data['user'] = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
-
-		$data['materials'] = $this->AModel->getListWIP();
-		$data['users'] = $this->AModel->getUsersDriver();
-
-        $this->load->view('templates/header', $data);
-        $this->load->view('templates/navbar', $data);
-        $this->load->view('templates/sidebar', $data);
-        $this->load->view('admin/add_delivery_item', $data);
-        $this->load->view('templates/footer');
-    }
 
 	public function addDeliveryNote()
 	{
@@ -403,7 +401,17 @@ class Admin extends CI_Controller
 		$this->load->view('templates/footer');
 	}
 
-	public function demand_forecast() {
+	public function demand_forecast() 
+	{
+		// Get user session
+		$usersession = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
+
+		if (empty($usersession['Role_id']) || empty($usersession['Name'])) {
+			$this->session->set_flashdata('ERROR', 'Session expired or user not found.');
+			redirect('auth');
+			return;
+		}
+		// Get input from form
 		$sample1 = $this->input->post('sample1');
 		$sample2 = $this->input->post('sample2');
 		$sample3 = $this->input->post('sample3');
