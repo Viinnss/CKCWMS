@@ -94,7 +94,12 @@
 					</div>
 					<div class="col-4">
 						<label for="password" class="form-label">Password</label>
-						<input type="password" class="form-control" id="password" name="password" required>
+							<div class="input-group">
+								<input type="password" class="form-control" id="password_add" name="password">
+								<button type="button" class="btn btn-outline-secondary togglePassword" data-target="password_add">
+									<i class="bi bi-eye"></i>
+								</button>
+							</div>
 					</div>
 				</div>
 				<div class="row ps-2 mt-3">
@@ -148,7 +153,12 @@
 						</div>
 						<div class="col-4">
 							<label for="password" class="form-label">Password</label>
-							<input type="password" class="form-control" id="password" name="password">
+							<div class="input-group">
+								<input type="password" class="form-control" id="password<?= $usr['Id']; ?>" name="password">
+								<button type="button" class="btn btn-outline-secondary togglePassword" data-target="password<?= $usr['Id']; ?>">
+									<i class="bi bi-eye"></i>
+								</button>
+							</div>
 						</div>
 					</div>
 					<div class="row ps-2 mt-3">
@@ -212,6 +222,28 @@
 	</div>
 	</form>
 <?php endforeach; ?>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".togglePassword").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const targetId = this.getAttribute("data-target");
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector("i");
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye");
+            }
+        });
+    });
+});
+</script>
 
 <script>
 	$(document).ready(function() {

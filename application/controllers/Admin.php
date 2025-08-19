@@ -390,6 +390,164 @@ class Admin extends CI_Controller
 		echo json_encode($delivery_item);
 	}
 
+	// Dispatching Raw
+	public function dispatch_raw()
+    {
+        $data['title'] = 'Dispatching Raw';
+        $data['user'] = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
+
+		$data['materials'] = $this->AModel->getListMaterial();
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/navbar', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('admin/dispatch_raw', $data);
+        $this->load->view('templates/footer');
+    }
+	public function addDispatchingRawMaterial(){
+		// Get user session
+		$usersession = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
+		// Check if user session is valid
+		if (empty($usersession['Role_id']) || empty($usersession['Name'])) {
+			$this->session->set_flashdata('ERROR', 'Session expired or user not found.');
+			redirect('auth');
+			return;
+		}
+		// Get materials from POST request
+		$materials = $this->input->post('materials');
+		if (empty($materials)) {
+			$this->session->set_flashdata('ERROR', 'No materials provided.');
+			redirect('admin/dispatch_raw');
+			return;
+		}
+
+		$successfulInserts = 0;
+
+		// Start a transaction to ensure atomicity
+		$this->db->trans_start();
+		// Loop through each material and prepare data for insertion
+		foreach ($materials as $material) {
+			$DataReceivingRaw = [
+				'Material_no'      => $material['Material_no'],
+				'Material_name'    => $material['Material_name'],
+				'Qty'              => floatval($material['Qty']),
+				'Unit'             => $material['Unit'],
+				'Transaction_type' => $material['Transaction_type'],
+				'Created_at'       => date('Y-m-d H:i:s'),
+				'Created_by'       => $usersession['Id'],
+				'Updated_at'       => date('Y-m-d H:i:s'),
+				'Updated_by'       => $usersession['Id']
+			];
+			// Insert data into storage table
+			$this->AModel->insertData('storage', $DataReceivingRaw);
+			$check_insert = $this->db->affected_rows();
+
+			if ($check_insert > 0) {
+				// RECORD BOM LOG
+				$query_log = $this->db->last_query();
+				$log_data = [
+					'affected_table' => 'storage',
+					'queries'        => $query_log,
+					'Created_at'     => date('Y-m-d H:i:s'),
+					'Created_by'     => $usersession['Id']
+				];
+				$this->db->insert('log', $log_data);
+				$successfulInserts++;
+			}
+		}
+
+		// Complete the transaction
+		$this->db->trans_complete();
+
+		// Check if all materials were inserted successfully
+		if ($this->db->trans_status() && $successfulInserts == count($materials)) {
+			$this->session->set_flashdata('SUCCESS_DISPATCHING_RAW', 'All materials dispatch successfully.');
+		} else {
+			$this->session->set_flashdata('FAILED_DISPATCHING_RAW', 'Failed to dispatch some or all materials.');
+		}
+
+		redirect('admin/dispatch_raw');
+	}
+
+	// Dispatching WIP
+	public function dispatch_wip()
+    {
+        $data['title'] = 'Dispatching WIP';
+        $data['user'] = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
+
+		$data['materials'] = $this->AModel->getListWIP();
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/navbar', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('admin/dispatch_wip', $data);
+        $this->load->view('templates/footer');
+    }
+	public function addDispatchingWipMaterial(){
+		// Get user session
+		$usersession = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
+
+		if (empty($usersession['Role_id']) || empty($usersession['Name'])) {
+			$this->session->set_flashdata('ERROR', 'Session expired or user not found.');
+			redirect('auth');
+			return;
+		}
+
+		$materials = $this->input->post('materials');
+		if (empty($materials)) {
+			$this->session->set_flashdata('ERROR', 'No materials provided.');
+			redirect('admin/dispatch_wip');
+			return;
+		}
+
+		$successfulInserts = 0;
+
+		// Start a transaction to ensure atomicity
+		$this->db->trans_start();
+
+		foreach ($materials as $material) {
+			$DataReceivingWip = [
+				'Material_no'      => $material['Material_no'],
+				'Material_name'    => $material['Material_name'],
+				'Qty'              => floatval($material['Qty']),
+				'Unit'             => $material['Unit'],
+				'Transaction_type' => $material['Transaction_type'],
+				'Created_at'       => date('Y-m-d H:i:s'),
+				'Created_by'       => $usersession['Id'],
+				'Updated_at'       => date('Y-m-d H:i:s'),
+				'Updated_by'       => $usersession['Id']
+			];
+
+			$this->AModel->insertData('storage', $DataReceivingWip);
+			$check_insert = $this->db->affected_rows();
+
+			if ($check_insert > 0) {
+				// RECORD BOM LOG
+				$query_log = $this->db->last_query();
+				$log_data = [
+					'affected_table' => 'storage',
+					'queries'        => $query_log,
+					'Created_at'     => date('Y-m-d H:i:s'),
+					'Created_by'     => $usersession['Id']
+				];
+				$this->db->insert('log', $log_data);
+				$successfulInserts++;
+			}
+		}
+
+		// Complete the transaction
+		$this->db->trans_complete();
+
+		// Check if all materials were inserted successfully
+		if ($this->db->trans_status() && $successfulInserts == count($materials)) {
+			$this->session->set_flashdata('SUCCESS_DISPATCHING_WIP', 'All materials dispatch successfully.');
+		} else {
+			$this->session->set_flashdata('FAILED_DISPATCHING_WIP', 'Failed to dispatch some or all materials.');
+		}
+
+		redirect('admin/dispatch_wip');
+	}
+
 	public function demand_forecasting_stock(){
 		$data['title'] = 'Demand Forecasting Stock';
 		$data['user'] = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();

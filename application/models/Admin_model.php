@@ -79,7 +79,7 @@ class Admin_model extends CI_Model {
                 }
             }
         }
-        // Pass 2: Jika masih null, gunakan moving average dengan window=5
+        // Pass 2: if theres still null values, use average of window of 5 days
         for ($i = 0; $i < $n; $i++) {
             if ($data_series[$i] === null) {
                 $sum = 0;
@@ -96,26 +96,27 @@ class Admin_model extends CI_Model {
         return $data_series;
     }
 
-	public function calculate_linear_regression_forecast_by_material($historicalDataByMaterial, $forecastDays) {
-        // Buat array untuk setiap hari (1 sampai max)
+	public function calculate_linear_regression_forecast_by_material($historicalDataMaterial, $forecastDays) {
+        // make an array to hold the data for each day
         $daysData = [];
-        foreach($historicalDataByMaterial as $record) {
-            $day = intval($record['day']);
-            if (!isset($daysData[$day])) {
-                $daysData[$day] = [];
+        foreach($historicalDataMaterial as $record) {
+            $day = intval($record['day']); // Convert day to integer
+            if (!isset($daysData[$day])) // Initialize the array for the day if it doesn't exist
+                {
+                $daysData[$day] = []; // Initialize the array for the day
             }
-            $daysData[$day][] = floatval($record['total_usage']);
+            $daysData[$day][] = floatval($record['total_usage']); 
         }
         
 
-        // Tentukan max hari dari data historis
+        // define the maximum day in the data
         $maxDay = empty($daysData) ? 0 : max(array_keys($daysData));
         // Buat series lengkap, indeks 1 sampai $maxDay.
         // Jika ada data, ambil nilai rata-rata untuk hari tersebut, jika tidak ada, set sebagai null.
         $data_series = [];
         for ($i = 1; $i <= $maxDay; $i++) {
-            if (isset($daysData[$i])) {
-                $data_series[] = array_sum($daysData[$i]) / count($daysData[$i]);
+            if (isset($daysData[$i])) { 
+                $data_series[] = array_sum($daysData[$i]) / count($daysData[$i]); 
             } else {
                 $data_series[] = null;
             }

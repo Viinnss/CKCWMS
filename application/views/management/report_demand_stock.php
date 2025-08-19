@@ -91,3 +91,22 @@
 
 	});
 </script>
+
+<?php if ($this->session->flashdata('success_forecasting_stock')): ?>
+	<script>
+		Swal.fire({
+			title: "Success",
+			html: `<?= $this->session->flashdata('success_forecasting_stock'); ?>`,
+			icon: "success",
+		});
+	</script>
+<?php endif; ?>
+<?php if ($this->session->flashdata('error_forecasting_stock')): ?>
+	<script>
+		Swal.fire({
+			title: "Error",
+			html: `<?= $this->session->flashdata('error_forecasting_stock'); ?>`,
+			icon: "error",
+		});
+	</script>
+<?php endif; ?>

@@ -91,12 +91,10 @@
                         <input type="text" class="form-control material-name w-full" name="materials[${rowIndex}][Material_name]" aria-label="Material Description" readonly>
                     </td>
                     <td>
-						<select class="form-select transaction-type w-full text-center" name="materials[${(rowIndex-1)}][Transaction_type]" required>
-							<option value="">Choose Type</option>
-							<option value="In">In</option>
-							<option value="Out">Out</option>
-                        </select>
-                    </td>
+						<input type="text" class="form-control text-center transaction-type" 
+							name="materials[${(rowIndex-1)}][Transaction_type]" 
+							value="In" readonly>
+					</td>
                     <td>
                         <input type="text" class="form-control material-qty w-full text-center" name="materials[${rowIndex}][Qty]" aria-label="Quantity" required>
                     </td>
@@ -114,9 +112,6 @@
 			updateRowIndices();
 
 			$('.material-select').select2({
-				width: '100%'
-			});
-			$('.transaction-type').select2({
 				width: '100%'
 			});
 

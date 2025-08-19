@@ -24,7 +24,7 @@
 						</button>
 					</div>
 				</div>
-				<?= form_open_multipart('admin/addReceivingRawMaterial'); ?>
+				<?= form_open_multipart('admin/addDispatchingWipMaterial'); ?>
 					<div class="row mt-2 mx-2">
 						<div class="col-12">
 							<div class="table-responsive">
@@ -93,7 +93,7 @@
                     <td>
 						<input type="text" class="form-control text-center transaction-type" 
 							name="materials[${(rowIndex-1)}][Transaction_type]" 
-							value="In" readonly>
+							value="Out" readonly>
 					</td>
                     <td>
                         <input type="text" class="form-control material-qty w-full text-center" name="materials[${rowIndex}][Qty]" aria-label="Quantity" required>
@@ -143,21 +143,21 @@
 </script>
 
 
-<?php if ($this->session->flashdata('SUCCESS_ADD_RECEIVING_RAW')): ?>
+<?php if ($this->session->flashdata('SUCCESS_DISPATCHING_WIP')): ?>
 	<script>
 		Swal.fire({
 			title: "Success",
-			html: `<?= $this->session->flashdata('SUCCESS_ADD_RECEIVING_RAW'); ?>`,
+			html: `<?= $this->session->flashdata('SUCCESS_DISPATCHING_WIP'); ?>`,
 			icon: "success"
 		});
 	</script>
 <?php endif; ?>
-<?php if ($this->session->flashdata('FAILED_ADD_RECEIVING_RAW')): ?>
+<?php if ($this->session->flashdata('FAILED_DISPATCHING_WIP')): ?>
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			Swal.fire({
 				title: "Error",
-				html: `<?= $this->session->flashdata('FAILED_ADD_RECEIVING_RAW'); ?>`,
+				html: `<?= $this->session->flashdata('FAILED_DISPATCHING_WIP'); ?>`,
 				icon: "error"
 			});
 		});
