@@ -76,8 +76,8 @@
 									<i class="bx bxs-edit" style="color: white;"></i>
 								</span>
 							</a>
-							<a href="<?=base_url('master/');?>delete_raw_material/${material.Id}">
-								<span class="badge bg-danger badge-hover" style=":hover{cursor: pointer;}">
+							<a href="#" class="btn-delete-raw" data-id="${material.Id}">
+								<span class="badge bg-danger badge-hover">
 									<i class="bx bxs-trash"></i>
 								</span>
 							</a>
@@ -85,6 +85,27 @@
 						</tr>`;
 					$tbody.append(row);
 				});
+
+				$tbody.on('click', '.btn-delete-raw', function(e) {
+				e.preventDefault(); 
+				let id = $(this).data('id'); 
+				let deleteUrl = "<?= base_url('master/delete_raw_material/'); ?>" + id;
+
+				Swal.fire({
+					title: "Are you sure?",
+					text: "This material will be permanently deleted!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#d33",
+					cancelButtonColor: "#3085d6",
+					confirmButtonText: "Yes, delete it!",
+					cancelButtonText: "Cancel"
+				}).then((result) => {
+					if (result.isConfirmed) {
+						window.location.href = deleteUrl; 
+					}
+				});
+			});
 
 				// Transform the table into a DataTable
 				$('#tbl-report-raw').DataTable({

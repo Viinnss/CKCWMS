@@ -404,16 +404,17 @@ class Admin extends CI_Controller
         $this->load->view('admin/dispatch_raw', $data);
         $this->load->view('templates/footer');
     }
-	public function addDispatchingRawMaterial(){
-		// Get user session
+	public function addDispatchingRawMaterial()
+	{
+		// === CEK SESSION USER ===
 		$usersession = $this->db->get_where('users', ['Email' => $this->session->userdata('email')])->row_array();
-		// Check if user session is valid
 		if (empty($usersession['Role_id']) || empty($usersession['Name'])) {
 			$this->session->set_flashdata('ERROR', 'Session expired or user not found.');
 			redirect('auth');
 			return;
 		}
-		// Get materials from POST request
+
+		// === CEK INPUT MATERIALS ===
 		$materials = $this->input->post('materials');
 		if (empty($materials)) {
 			$this->session->set_flashdata('ERROR', 'No materials provided.');
@@ -422,28 +423,25 @@ class Admin extends CI_Controller
 		}
 
 		$successfulInserts = 0;
-
-		// Start a transaction to ensure atomicity
 		$this->db->trans_start();
-		// Loop through each material and prepare data for insertion
+
+		// === LOOP INSERT DATA ===
 		foreach ($materials as $material) {
 			$DataReceivingRaw = [
 				'Material_no'      => $material['Material_no'],
 				'Material_name'    => $material['Material_name'],
 				'Qty'              => floatval($material['Qty']),
 				'Unit'             => $material['Unit'],
-				'Transaction_type' => $material['Transaction_type'],
+				'Transaction_type' => 'OUT', // konsisten huruf besar
 				'Created_at'       => date('Y-m-d H:i:s'),
 				'Created_by'       => $usersession['Id'],
 				'Updated_at'       => date('Y-m-d H:i:s'),
 				'Updated_by'       => $usersession['Id']
 			];
-			// Insert data into storage table
 			$this->AModel->insertData('storage', $DataReceivingRaw);
 			$check_insert = $this->db->affected_rows();
 
 			if ($check_insert > 0) {
-				// RECORD BOM LOG
 				$query_log = $this->db->last_query();
 				$log_data = [
 					'affected_table' => 'storage',
@@ -456,18 +454,94 @@ class Admin extends CI_Controller
 			}
 		}
 
-		// Complete the transaction
 		$this->db->trans_complete();
 
-		// Check if all materials were inserted successfully
+		// === JIKA SUKSES ===
 		if ($this->db->trans_status() && $successfulInserts == count($materials)) {
 			$this->session->set_flashdata('SUCCESS_DISPATCHING_RAW', 'All materials dispatch successfully.');
+
+			// === CEK LOW STOCK ===
+			$query = "
+				SELECT 
+					Material_no,
+					Material_name,
+					Unit,
+					(SUM(CASE WHEN Transaction_type = 'IN' THEN Qty ELSE 0 END) 
+					- SUM(CASE WHEN Transaction_type = 'OUT' THEN Qty ELSE 0 END)) as CurrentStock
+				FROM storage
+				GROUP BY Material_no, Material_name, Unit
+				HAVING CurrentStock <= 25
+			";
+			$lowStocks = $this->db->query($query)->result_array();
+
+			// === JIKA ADA STOCK MINIMUM, KIRIM EMAIL ===
+			if (!empty($lowStocks)) {
+				$recipientEmail = "kevinmarthakusuma03@gmail.com"; // ganti sesuai tujuan
+				$this->_sendLowStockEmail($recipientEmail, $lowStocks);
+			}
+
 		} else {
 			$this->session->set_flashdata('FAILED_DISPATCHING_RAW', 'Failed to dispatch some or all materials.');
 		}
 
 		redirect('admin/dispatch_raw');
 	}
+
+
+	private function _sendLowStockEmail($toEmail, $lowStocks) 
+	{
+		$this->load->library('email');
+
+		// === KONFIGURASI SMTP SENDGRID ===
+		$config = [
+			'protocol'  => 'smtp',
+			'smtp_host' => 'smtp.sendgrid.net',  
+			'smtp_user' => 'apikey', // HARUS ditulis "apikey"
+			'smtp_pass' => 'ISI_API_KEY_SENDGRID', // ganti dengan API key asli SendGrid
+			'smtp_port' => 587,
+			'smtp_crypto' => 'tls',
+			'mailtype'  => 'html',
+			'charset'   => 'utf-8',
+			'newline'   => "\r\n",
+		];
+		$this->email->initialize($config);
+
+		// === HEADER EMAIL ===
+		$this->email->from('inventorynotif@gmail.com', 'Inventory System'); 
+		$this->email->to($toEmail);
+		$this->email->subject('Low Stock Notification');
+
+		// === ISI EMAIL ===
+		$message = "<h3>⚠ Low Stock Detected!</h3>";
+		$message .= "<p>Beberapa material sudah berada di bawah minimum stock:</p>";
+		$message .= "<table border='1' cellpadding='6' cellspacing='0'>
+						<tr>
+							<th>Material No</th>
+							<th>Material Name</th>
+							<th>Unit</th>
+							<th>Qty</th>
+						</tr>";
+		foreach ($lowStocks as $row) {
+			$message .= "<tr>
+							<td>{$row['Material_no']}</td>
+							<td>{$row['Material_name']}</td>
+							<td>{$row['Unit']}</td>
+							<td>{$row['CurrentStock']}</td>
+						</tr>";
+		}
+		$message .= "</table>";
+
+		$this->email->message($message);
+
+		// === KIRIM EMAIL ===
+		if ($this->email->send()) {
+			log_message('info', 'Low stock email sent successfully to ' . $toEmail);
+		} else {
+			log_message('error', 'Failed to send low stock email: ' . $this->email->print_debugger());
+		}
+	}
+
+
 
 	// Dispatching WIP
 	public function dispatch_wip()

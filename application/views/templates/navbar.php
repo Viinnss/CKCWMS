@@ -164,31 +164,3 @@
 	</nav><!-- End Icons Navigation -->
 
 </header><!-- End Header -->
-
-<?php if (!empty($lowNotifStock)): ?>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            let notifHtml = `
-                <ul style="text-align:left;list-style:none;padding-left:0">
-                    <?php foreach ($lowNotifStock as $ln): ?>
-                        <li>
-                            <b><?= $ln['Material_no']; ?></b> - <?= $ln['Material_name']; ?><br>
-                            <small>
-                                Last update: <?= $ln['Updated_by']; ?> | 
-                                <?= date_format(new DateTime($ln['Updated_at']), 'Y-m-d H:i:s') ?>
-                            </small>
-                        </li>
-                        <hr>
-                    <?php endforeach; ?>
-                </ul>
-            `;
-
-            Swal.fire({
-                icon: 'warning',
-                title: 'Low Stock Alert!',
-                html: notifHtml,
-                confirmButtonText: 'OK'
-            });
-        });
-    </script>
-<?php endif; ?>
