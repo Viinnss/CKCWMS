@@ -83,6 +83,8 @@ class Admin extends CI_Controller
 			];
 			// Insert data into storage table
 			$this->AModel->insertData('storage', $DataReceivingRaw);
+			$this->load->library('Notifier');
+			$this->notifier->send_low_stock_notification();
 			$check_insert = $this->db->affected_rows();
 
 			if ($check_insert > 0) {
