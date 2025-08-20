@@ -425,7 +425,6 @@ class Admin extends CI_Controller
 		$successfulInserts = 0;
 		$this->db->trans_start();
 
-		// === LOOP INSERT DATA ===
 		foreach ($materials as $material) {
 			$DataReceivingRaw = [
 				'Material_no'      => $material['Material_no'],
@@ -439,6 +438,8 @@ class Admin extends CI_Controller
 				'Updated_by'       => $usersession['Id']
 			];
 			$this->AModel->insertData('storage', $DataReceivingRaw);
+			$this->load->library('Notifier');
+    		$this->notifier->send_low_stock_notification();
 			$check_insert = $this->db->affected_rows();
 
 			if ($check_insert > 0) {
@@ -454,94 +455,17 @@ class Admin extends CI_Controller
 			}
 		}
 
+		// Complete the transaction
 		$this->db->trans_complete();
 
-		// === JIKA SUKSES ===
+		// Check if all materials were inserted successfully
 		if ($this->db->trans_status() && $successfulInserts == count($materials)) {
 			$this->session->set_flashdata('SUCCESS_DISPATCHING_RAW', 'All materials dispatch successfully.');
-
-			// === CEK LOW STOCK ===
-			$query = "
-				SELECT 
-					Material_no,
-					Material_name,
-					Unit,
-					(SUM(CASE WHEN Transaction_type = 'IN' THEN Qty ELSE 0 END) 
-					- SUM(CASE WHEN Transaction_type = 'OUT' THEN Qty ELSE 0 END)) as CurrentStock
-				FROM storage
-				GROUP BY Material_no, Material_name, Unit
-				HAVING CurrentStock <= 25
-			";
-			$lowStocks = $this->db->query($query)->result_array();
-
-			// === JIKA ADA STOCK MINIMUM, KIRIM EMAIL ===
-			if (!empty($lowStocks)) {
-				$recipientEmail = "kevinmarthakusuma03@gmail.com"; // ganti sesuai tujuan
-				$this->_sendLowStockEmail($recipientEmail, $lowStocks);
-			}
-
 		} else {
 			$this->session->set_flashdata('FAILED_DISPATCHING_RAW', 'Failed to dispatch some or all materials.');
 		}
-
 		redirect('admin/dispatch_raw');
 	}
-
-
-	private function _sendLowStockEmail($toEmail, $lowStocks) 
-	{
-		$this->load->library('email');
-
-		// === KONFIGURASI SMTP SENDGRID ===
-		$config = [
-			'protocol'  => 'smtp',
-			'smtp_host' => 'smtp.sendgrid.net',  
-			'smtp_user' => 'apikey', // HARUS ditulis "apikey"
-			'smtp_pass' => 'ISI_API_KEY_SENDGRID', // ganti dengan API key asli SendGrid
-			'smtp_port' => 587,
-			'smtp_crypto' => 'tls',
-			'mailtype'  => 'html',
-			'charset'   => 'utf-8',
-			'newline'   => "\r\n",
-		];
-		$this->email->initialize($config);
-
-		// === HEADER EMAIL ===
-		$this->email->from('inventorynotif@gmail.com', 'Inventory System'); 
-		$this->email->to($toEmail);
-		$this->email->subject('Low Stock Notification');
-
-		// === ISI EMAIL ===
-		$message = "<h3>⚠ Low Stock Detected!</h3>";
-		$message .= "<p>Beberapa material sudah berada di bawah minimum stock:</p>";
-		$message .= "<table border='1' cellpadding='6' cellspacing='0'>
-						<tr>
-							<th>Material No</th>
-							<th>Material Name</th>
-							<th>Unit</th>
-							<th>Qty</th>
-						</tr>";
-		foreach ($lowStocks as $row) {
-			$message .= "<tr>
-							<td>{$row['Material_no']}</td>
-							<td>{$row['Material_name']}</td>
-							<td>{$row['Unit']}</td>
-							<td>{$row['CurrentStock']}</td>
-						</tr>";
-		}
-		$message .= "</table>";
-
-		$this->email->message($message);
-
-		// === KIRIM EMAIL ===
-		if ($this->email->send()) {
-			log_message('info', 'Low stock email sent successfully to ' . $toEmail);
-		} else {
-			log_message('error', 'Failed to send low stock email: ' . $this->email->print_debugger());
-		}
-	}
-
-
 
 	// Dispatching WIP
 	public function dispatch_wip()
